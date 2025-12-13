@@ -1,0 +1,79 @@
+/* LLM-Mux Design System - CSS Variables */
+
+:root {
+  /* Light theme (default fallback) */
+  --bg-body: #ffffff;
+  --bg-surface: #fafafa;
+  --bg-card: #ffffff;
+  --bg-hover: #f5f5f5;
+  --border-color: #e5e7eb;
+  --border-hover: #d1d5db;
+  --text-primary: #09090b;
+  --text-secondary: #52525b;
+  --text-tertiary: #a1a1aa;
+  --accent-primary: #000000;
+  --accent-primary-fg: #ffffff;
+  --accent-subtle: #f4f4f5;
+  --success-bg: #dcfce7;
+  --success-text: #166534;
+  --danger-bg: #fee2e2;
+  --danger-text: #991b1b;
+  --warning-bg: #fef9c3;
+  --warning-text: #854d0e;
+}
+
+.dark {
+  --bg-body: #0a0a0a;
+  --bg-surface: #000000;
+  --bg-card: #111111;
+  --bg-hover: #1a1a1a;
+  --border-color: #27272a;
+  --border-hover: #3f3f46;
+  --text-primary: #ededed;
+  --text-secondary: #a1a1aa;
+  --text-tertiary: #52525b;
+  --accent-primary: #ededed;
+  --accent-primary-fg: #000000;
+  --accent-subtle: #27272a;
+  --success-bg: rgba(34, 197, 94, 0.1);
+  --success-text: #4ade80;
+  --danger-bg: rgba(239, 68, 68, 0.1);
+  --danger-text: #f87171;
+  --warning-bg: rgba(234, 179, 8, 0.1);
+  --warning-text: #facc15;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary);
+}
+
+/* Material Symbols configuration */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+.material-symbols-outlined.filled {
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+:root {
+  --ring: var(--accent-primary);
+}
+.dark {
+  --ring: var(--accent-primary);
+}

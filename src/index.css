@@ -1,0 +1,68 @@
+@import "tailwindcss";
+@import "./styles/theme.css";
+
+/* Base styles */
+* {
+  outline: none;
+}
+
+*:focus {
+  outline: none;
+}
+
+*:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--bg-body);
+  color: var(--text-primary);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Remove default link/button focus styles */
+a, button {
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+a:focus, button:focus {
+  outline: none;
+}
+
+/* Page transitions handled by Framer Motion */
+
+/* Custom Tailwind utilities */
+@layer utilities {
+  .text-primary {
+    color: var(--text-primary);
+  }
+  .text-secondary {
+    color: var(--text-secondary);
+  }
+  .text-tertiary {
+    color: var(--text-tertiary);
+  }
+  .bg-body {
+    background-color: var(--bg-body);
+  }
+  .bg-surface {
+    background-color: var(--bg-surface);
+  }
+  .bg-card {
+    background-color: var(--bg-card);
+  }
+  .bg-hover {
+    background-color: var(--bg-hover);
+  }
+  .border-default {
+    border-color: var(--border-color);
+  }
+}

@@ -1,0 +1,1763 @@
+openapi: 3.0.3
+info:
+  title: llm-mux Management API
+  description: |
+    Management API for llm-mux server configuration, authentication file management, and usage statistics.
+
+    ## Authentication
+    All management endpoints require authentication via one of:
+    - `Authorization: Bearer <secret>` header
+    - `X-Management-Key: <secret>` header
+
+    The secret is configured in `config.yaml` under `remote-management.secret-key` or via `MANAGEMENT_PASSWORD` environment variable.
+
+    ## Remote Access
+    By default, management API is only accessible from localhost. To enable remote access, set `remote-management.allow-remote: true` in config.yaml.
+  version: 1.0.0
+  contact:
+    name: llm-mux Project
+    url: https://github.com/router-for-me/llm-mux
+
+servers:
+  - url: http://localhost:8318/v0/management
+    description: Local development server
+  - url: https://localhost:8318/v0/management
+    description: Local development server (TLS)
+
+security:
+  - BearerAuth: []
+  - ManagementKey: []
+
+tags:
+  - name: Settings
+    description: Server configuration settings
+  - name: API Keys
+    description: API key management (Gemini, Claude, Codex, OpenAI compatibility)
+  - name: Auth Files
+    description: Authentication file upload/download/management
+  - name: OAuth
+    description: OAuth authentication flows
+  - name: Usage
+    description: Usage statistics and monitoring
+  - name: Logs
+    description: Server logs and error logs
+  - name: Config
+    description: Full configuration management
+
+paths:
+  # Settings endpoints
+  /debug:
+    get:
+      tags: [Settings]
+      summary: Get debug mode status
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  debug:
+                    type: boolean
+    put:
+      tags: [Settings]
+      summary: Update debug mode
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                value:
+                  type: boolean
+      responses:
+        '200':
+          $ref: '#/components/responses/StatusOk'
+    patch:
+      tags: [Settings]
+      summary: Update debug mode (alias for PUT)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                value:
+                  type: boolean
+      responses:
+        '200':
+          $ref: '#/components/responses/StatusOk'
+
+  /logging-to-file:
+    get:
+      tags: [Settings]
+      summary: Get logging-to-file status
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  logging-to-file:
+                    type: boolean
+    put:
+      tags: [Settings]
+      summary: Update logging-to-file setting
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                value:
+                  type: boolean
+      responses:
+        '200':
+          $ref: '#/components/responses/StatusOk'
+    patch:
+      tags: [Settings]
+      summary: Update logging-to-file setting (alias for PUT)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                value:
+                  type: boolean
+      responses:
+        '200':
+          $ref: '#/components/responses/StatusOk'
+
+  /usage-statistics-enabled:
+    get:
+      tags: [Settings]
+      summary: Get usage statistics status
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  usage-statistics-enabled:
+                    type: boolean
+    put:
+      tags: [Settings]
+      summary: Update usage statistics setting
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                value:
+                  type: boolean
+      responses:
+        '200':
+          $ref: '#/components/responses/StatusOk'
+    patch:
+      tags: [Settings]
+      summary: Update usage statistics setting (alias for PUT)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                value:
+                  type: boolean
+      responses:
+        '200':
+          $ref: '#/components/responses/StatusOk'
+
+  /proxy-url:
+    get:
+      tags: [Settings]
+      summary: Get proxy URL
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  proxy-url:
+                    type: string
+    put:
+      tags: [Settings]
+      summary: Update proxy URL
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                value:
+                  type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/StatusOk'
+    patch:
+      tags: [Settings]
+      summary: Update proxy URL (alias for PUT)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                value:
+                  type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/StatusOk'
+    delete:
+      tags: [Settings]
+      summary: Clear proxy URL
+      responses:
+        '200':
+          $ref: '#/components/responses/StatusOk'
+
+  /quota-exceeded/switch-project:
+    get:
+      tags: [Settings]
+      summary: Get switch-project setting
+      description: Whether to automatically switch projects when quota is exceeded
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  switch-project:
+                    type: boolean
+    put:
+      tags: [Settings]
+      summary: Update switch-project setting
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                value:
+                  type: boolean
+      responses:
+        '200':
+          $ref: '#/components/responses/StatusOk'
+    patch:
+      tags: [Settings]
+      summary: Update switch-project setting (alias for PUT)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                value:
+                  type: boolean
+      responses:
+        '200':
+          $ref: '#/components/responses/StatusOk'
+
+  /quota-exceeded/switch-preview-model:
+    get:
+      tags: [Settings]
+      summary: Get switch-preview-model setting
+      description: Whether to automatically switch to preview models when quota is exceeded
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  switch-preview-model:
+                    type: boolean
+    put:
+      tags: [Settings]
+      summary: Update switch-preview-model setting
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                value:
+                  type: boolean
+      responses:
+        '200':
+          $ref: '#/components/responses/StatusOk'
+    patch:
+      tags: [Settings]
+      summary: Update switch-preview-model setting (alias for PUT)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                value:
+                  type: boolean
+      responses:
+        '200':
+          $ref: '#/components/responses/StatusOk'
+
+  /request-log:
+    get:
+      tags: [Settings]
+      summary: Get request logging status
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  request-log:
+                    type: boolean
+    put:
+      tags: [Settings]
+      summary: Update request logging setting
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                value:
+                  type: boolean
+      responses:
+        '200':
+          $ref: '#/components/responses/StatusOk'
+    patch:
+      tags: [Settings]
+      summary: Update request logging setting (alias for PUT)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                value:
+                  type: boolean
+      responses:
+        '200':
+          $ref: '#/components/responses/StatusOk'
+
+  /ws-auth:
+    get:
+      tags: [Settings]
+      summary: Get websocket authentication status
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ws-auth:
+                    type: boolean
+    put:
+      tags: [Settings]
+      summary: Update websocket authentication setting
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                value:
+                  type: boolean
+      responses:
+        '200':
+          $ref: '#/components/responses/StatusOk'
+    patch:
+      tags: [Settings]
+      summary: Update websocket authentication setting (alias for PUT)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                value:
+                  type: boolean
+      responses:
+        '200':
+          $ref: '#/components/responses/StatusOk'
+
+  /request-retry:
+    get:
+      tags: [Settings]
+      summary: Get request retry count
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  request-retry:
+                    type: integer
+    put:
+      tags: [Settings]
+      summary: Update request retry count
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                value:
+                  type: integer
+      responses:
+        '200':
+          $ref: '#/components/responses/StatusOk'
+    patch:
+      tags: [Settings]
+      summary: Update request retry count (alias for PUT)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                value:
+                  type: integer
+      responses:
+        '200':
+          $ref: '#/components/responses/StatusOk'
+
+  /max-retry-interval:
+    get:
+      tags: [Settings]
+      summary: Get max retry interval in seconds
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  max-retry-interval:
+                    type: integer
+    put:
+      tags: [Settings]
+      summary: Update max retry interval
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                value:
+                  type: integer
+      responses:
+        '200':
+          $ref: '#/components/responses/StatusOk'
+    patch:
+      tags: [Settings]
+      summary: Update max retry interval (alias for PUT)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                value:
+                  type: integer
+      responses:
+        '200':
+          $ref: '#/components/responses/StatusOk'
+
+  # API Keys endpoints
+  /api-keys:
+    get:
+      tags: [API Keys]
+      summary: Get API keys list
+      description: Returns list of configured access API keys
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  api-keys:
+                    type: array
+                    items:
+                      type: string
+    put:
+      tags: [API Keys]
+      summary: Replace all API keys
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - type: array
+                  items:
+                    type: string
+                - type: object
+                  properties:
+                    items:
+                      type: array
+                      items:
+                        type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/StatusOk'
+    patch:
+      tags: [API Keys]
+      summary: Update specific API key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                old:
+                  type: string
+                new:
+                  type: string
+                index:
+                  type: integer
+                value:
+                  type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/StatusOk'
+    delete:
+      tags: [API Keys]
+      summary: Delete API key
+      parameters:
+        - name: index
+          in: query
+          schema:
+            type: integer
+        - name: value
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/StatusOk'
+
+  /gemini-api-key:
+    get:
+      tags: [API Keys]
+      summary: Get Gemini API keys
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  gemini-api-key:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/GeminiKey'
+    put:
+      tags: [API Keys]
+      summary: Replace all Gemini API keys
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - type: array
+                  items:
+                    $ref: '#/components/schemas/GeminiKey'
+                - type: object
+                  properties:
+                    items:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/GeminiKey'
+      responses:
+        '200':
+          $ref: '#/components/responses/StatusOk'
+    patch:
+      tags: [API Keys]
+      summary: Update specific Gemini API key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                index:
+                  type: integer
+                match:
+                  type: string
+                  description: API key to match
+                value:
+                  $ref: '#/components/schemas/GeminiKey'
+              required:
+                - value
+      responses:
+        '200':
+          $ref: '#/components/responses/StatusOk'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [API Keys]
+      summary: Delete Gemini API key
+      parameters:
+        - name: api-key
+          in: query
+          schema:
+            type: string
+        - name: index
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          $ref: '#/components/responses/StatusOk'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /claude-api-key:
+    get:
+      tags: [API Keys]
+      summary: Get Claude API keys
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  claude-api-key:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ClaudeKey'
+    put:
+      tags: [API Keys]
+      summary: Replace all Claude API keys
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - type: array
+                  items:
+                    $ref: '#/components/schemas/ClaudeKey'
+                - type: object
+                  properties:
+                    items:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/ClaudeKey'
+      responses:
+        '200':
+          $ref: '#/components/responses/StatusOk'
+    patch:
+      tags: [API Keys]
+      summary: Update specific Claude API key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                index:
+                  type: integer
+                match:
+                  type: string
+                  description: API key to match
+                value:
+                  $ref: '#/components/schemas/ClaudeKey'
+              required:
+                - value
+      responses:
+        '200':
+          $ref: '#/components/responses/StatusOk'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [API Keys]
+      summary: Delete Claude API key
+      parameters:
+        - name: api-key
+          in: query
+          schema:
+            type: string
+        - name: index
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          $ref: '#/components/responses/StatusOk'
+
+  /codex-api-key:
+    get:
+      tags: [API Keys]
+      summary: Get Codex API keys
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  codex-api-key:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CodexKey'
+    put:
+      tags: [API Keys]
+      summary: Replace all Codex API keys
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - type: array
+                  items:
+                    $ref: '#/components/schemas/CodexKey'
+                - type: object
+                  properties:
+                    items:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/CodexKey'
+      responses:
+        '200':
+          $ref: '#/components/responses/StatusOk'
+    patch:
+      tags: [API Keys]
+      summary: Update specific Codex API key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                index:
+                  type: integer
+                match:
+                  type: string
+                  description: API key to match
+                value:
+                  $ref: '#/components/schemas/CodexKey'
+              required:
+                - value
+      responses:
+        '200':
+          $ref: '#/components/responses/StatusOk'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [API Keys]
+      summary: Delete Codex API key
+      parameters:
+        - name: api-key
+          in: query
+          schema:
+            type: string
+        - name: index
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          $ref: '#/components/responses/StatusOk'
+
+  /openai-compatibility:
+    get:
+      tags: [API Keys]
+      summary: Get OpenAI compatibility configurations
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  openai-compatibility:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/OpenAICompatibility'
+    put:
+      tags: [API Keys]
+      summary: Replace all OpenAI compatibility configurations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - type: array
+                  items:
+                    $ref: '#/components/schemas/OpenAICompatibility'
+                - type: object
+                  properties:
+                    items:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/OpenAICompatibility'
+      responses:
+        '200':
+          $ref: '#/components/responses/StatusOk'
+    patch:
+      tags: [API Keys]
+      summary: Update specific OpenAI compatibility configuration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                index:
+                  type: integer
+                value:
+                  $ref: '#/components/schemas/OpenAICompatibility'
+              required:
+                - value
+      responses:
+        '200':
+          $ref: '#/components/responses/StatusOk'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [API Keys]
+      summary: Delete OpenAI compatibility configuration
+      parameters:
+        - name: name
+          in: query
+          schema:
+            type: string
+        - name: index
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          $ref: '#/components/responses/StatusOk'
+
+  /oauth-excluded-models:
+    get:
+      tags: [API Keys]
+      summary: Get OAuth excluded models map
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  oauth-excluded-models:
+                    type: object
+                    additionalProperties:
+                      type: array
+                      items:
+                        type: string
+    put:
+      tags: [API Keys]
+      summary: Replace OAuth excluded models map
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - type: object
+                  additionalProperties:
+                    type: array
+                    items:
+                      type: string
+                - type: object
+                  properties:
+                    items:
+                      type: object
+                      additionalProperties:
+                        type: array
+                        items:
+                          type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/StatusOk'
+    patch:
+      tags: [API Keys]
+      summary: Update OAuth excluded models for specific provider
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                provider:
+                  type: string
+                models:
+                  type: array
+                  items:
+                    type: string
+              required:
+                - provider
+      responses:
+        '200':
+          $ref: '#/components/responses/StatusOk'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [API Keys]
+      summary: Delete OAuth excluded models for provider
+      parameters:
+        - name: provider
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/StatusOk'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # Auth Files endpoints
+  /auth-files:
+    get:
+      tags: [Auth Files]
+      summary: List authentication files
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  files:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AuthFile'
+    post:
+      tags: [Auth Files]
+      summary: Upload authentication file
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+          application/json:
+            schema:
+              type: object
+              description: Raw JSON body (requires ?name= query parameter)
+      parameters:
+        - name: name
+          in: query
+          description: Filename for raw JSON upload
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/StatusOk'
+    delete:
+      tags: [Auth Files]
+      summary: Delete authentication file(s)
+      parameters:
+        - name: name
+          in: query
+          description: Filename to delete
+          schema:
+            type: string
+        - name: all
+          in: query
+          description: Delete all files (true/1/*)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  deleted:
+                    type: integer
+
+  /auth-files/download:
+    get:
+      tags: [Auth Files]
+      summary: Download authentication file
+      parameters:
+        - name: name
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: File content
+          content:
+            application/json:
+              schema:
+                type: object
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /vertex/import:
+    post:
+      tags: [Auth Files]
+      summary: Import Vertex AI service account credential
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Service account JSON file
+                location:
+                  type: string
+                  description: GCP location (default us-central1)
+              required:
+                - file
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  auth-file:
+                    type: string
+                  project_id:
+                    type: string
+                  email:
+                    type: string
+                  location:
+                    type: string
+
+  # OAuth endpoints
+  /anthropic-auth-url:
+    get:
+      tags: [OAuth]
+      summary: Initiate Claude (Anthropic) OAuth flow
+      parameters:
+        - name: is_webui
+          in: query
+          description: Set to true/1 for web UI flows
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OAuth URL and state
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  url:
+                    type: string
+                  state:
+                    type: string
+
+  /codex-auth-url:
+    get:
+      tags: [OAuth]
+      summary: Initiate Codex (OpenAI) OAuth flow
+      parameters:
+        - name: is_webui
+          in: query
+          description: Set to true/1 for web UI flows
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OAuth URL and state
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  url:
+                    type: string
+                  state:
+                    type: string
+
+  /gemini-cli-auth-url:
+    get:
+      tags: [OAuth]
+      summary: Initiate Gemini CLI OAuth flow
+      parameters:
+        - name: project_id
+          in: query
+          description: GCP project ID (optional, auto-detected if omitted)
+          schema:
+            type: string
+        - name: is_webui
+          in: query
+          description: Set to true/1 for web UI flows
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OAuth URL and state
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  url:
+                    type: string
+                  state:
+                    type: string
+
+  /antigravity-auth-url:
+    get:
+      tags: [OAuth]
+      summary: Initiate Antigravity OAuth flow
+      parameters:
+        - name: is_webui
+          in: query
+          description: Set to true/1 for web UI flows
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OAuth URL and state
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  url:
+                    type: string
+                  state:
+                    type: string
+
+  /qwen-auth-url:
+    get:
+      tags: [OAuth]
+      summary: Initiate Qwen OAuth flow
+      responses:
+        '200':
+          description: OAuth URL and state
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  url:
+                    type: string
+                  state:
+                    type: string
+
+  /iflow-auth-url:
+    get:
+      tags: [OAuth]
+      summary: Initiate iFlow OAuth flow
+      parameters:
+        - name: is_webui
+          in: query
+          description: Set to true/1 for web UI flows
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OAuth URL and state
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  url:
+                    type: string
+                  state:
+                    type: string
+    post:
+      tags: [OAuth]
+      summary: Authenticate iFlow with cookie
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                cookie:
+                  type: string
+              required:
+                - cookie
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  saved_path:
+                    type: string
+                  email:
+                    type: string
+                  expired:
+                    type: string
+                  type:
+                    type: string
+
+  /get-auth-status:
+    get:
+      tags: [OAuth]
+      summary: Check OAuth flow status
+      parameters:
+        - name: state
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [ok, wait, error]
+                  error:
+                    type: string
+
+  # Usage endpoint
+  /usage:
+    get:
+      tags: [Usage]
+      summary: Get usage statistics
+      responses:
+        '200':
+          description: Usage statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  usage:
+                    $ref: '#/components/schemas/UsageStatistics'
+                  failed_requests:
+                    type: integer
+
+  # Logs endpoints
+  /logs:
+    get:
+      tags: [Logs]
+      summary: Get server logs
+      parameters:
+        - name: after
+          in: query
+          description: Unix timestamp - only return logs after this time
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          description: Maximum number of lines to return
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Log lines
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  lines:
+                    type: array
+                    items:
+                      type: string
+                  line-count:
+                    type: integer
+                  latest-timestamp:
+                    type: integer
+    delete:
+      tags: [Logs]
+      summary: Clear all server logs
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  removed:
+                    type: integer
+
+  /request-error-logs:
+    get:
+      tags: [Logs]
+      summary: List error request log files
+      description: Returns empty list when request-log is enabled
+      responses:
+        '200':
+          description: Error log files
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  files:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        size:
+                          type: integer
+                        modified:
+                          type: integer
+
+  /request-error-logs/{name}:
+    get:
+      tags: [Logs]
+      summary: Download specific error log file
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: File download
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # Config endpoints
+  /config:
+    get:
+      tags: [Config]
+      summary: Get current configuration (JSON)
+      responses:
+        '200':
+          description: Current configuration
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Config'
+
+  /config.yaml:
+    get:
+      tags: [Config]
+      summary: Get raw config.yaml file
+      responses:
+        '200':
+          description: Raw YAML content
+          content:
+            application/yaml:
+              schema:
+                type: string
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Config]
+      summary: Replace config.yaml file
+      requestBody:
+        required: true
+        content:
+          application/yaml:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  changed:
+                    type: array
+                    items:
+                      type: string
+        '400':
+          description: Invalid YAML
+        '422':
+          description: Invalid config
+
+  /latest-version:
+    get:
+      tags: [Config]
+      summary: Get latest release version from GitHub
+      responses:
+        '200':
+          description: Latest version
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  latest-version:
+                    type: string
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      description: Management secret key via Authorization header
+    ManagementKey:
+      type: apiKey
+      in: header
+      name: X-Management-Key
+      description: Management secret key via custom header
+
+  responses:
+    StatusOk:
+      description: Operation successful
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                enum: [ok]
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+
+  schemas:
+    GeminiKey:
+      type: object
+      properties:
+        api-key:
+          type: string
+        base-url:
+          type: string
+        proxy-url:
+          type: string
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+        excluded-models:
+          type: array
+          items:
+            type: string
+      required:
+        - api-key
+
+    ClaudeKey:
+      type: object
+      properties:
+        api-key:
+          type: string
+        base-url:
+          type: string
+        proxy-url:
+          type: string
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+        excluded-models:
+          type: array
+          items:
+            type: string
+        models:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              alias:
+                type: string
+      required:
+        - api-key
+
+    CodexKey:
+      type: object
+      properties:
+        api-key:
+          type: string
+        base-url:
+          type: string
+        proxy-url:
+          type: string
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+        excluded-models:
+          type: array
+          items:
+            type: string
+      required:
+        - api-key
+
+    OpenAICompatibility:
+      type: object
+      properties:
+        name:
+          type: string
+        base-url:
+          type: string
+        api-key-entries:
+          type: array
+          items:
+            type: object
+            properties:
+              api-key:
+                type: string
+              proxy-url:
+                type: string
+        models:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              alias:
+                type: string
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+      required:
+        - name
+        - base-url
+
+    AuthFile:
+      type: object
+      properties:
+        id:
+          type: string
+        auth_index:
+          type: integer
+        name:
+          type: string
+        type:
+          type: string
+        provider:
+          type: string
+        label:
+          type: string
+        status:
+          type: string
+        status_message:
+          type: string
+        disabled:
+          type: boolean
+        unavailable:
+          type: boolean
+        runtime_only:
+          type: boolean
+        source:
+          type: string
+          enum: [file, memory]
+        size:
+          type: integer
+        email:
+          type: string
+        account_type:
+          type: string
+        account:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        modtime:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        last_refresh:
+          type: string
+          format: date-time
+        path:
+          type: string
+
+    UsageStatistics:
+      type: object
+      properties:
+        total_requests:
+          type: integer
+        success_count:
+          type: integer
+        failure_count:
+          type: integer
+        total_tokens:
+          type: integer
+        apis:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              total_requests:
+                type: integer
+              total_tokens:
+                type: integer
+              models:
+                type: object
+                additionalProperties:
+                  type: object
+                  properties:
+                    total_requests:
+                      type: integer
+                    total_tokens:
+                      type: integer
+        requests_by_day:
+          type: object
+          additionalProperties:
+            type: integer
+        requests_by_hour:
+          type: object
+          additionalProperties:
+            type: integer
+        tokens_by_day:
+          type: object
+          additionalProperties:
+            type: integer
+        tokens_by_hour:
+          type: object
+          additionalProperties:
+            type: integer
+
+    Config:
+      type: object
+      description: Full server configuration (simplified schema)
+      properties:
+        port:
+          type: integer
+        auth-dir:
+          type: string
+        debug:
+          type: boolean
+        logging-to-file:
+          type: boolean
+        usage-statistics-enabled:
+          type: boolean
+        proxy-url:
+          type: string
+        request-retry:
+          type: integer
+        max-retry-interval:
+          type: integer
+        ws-auth:
+          type: boolean
+        request-log:
+          type: boolean
+        gemini-api-key:
+          type: array
+          items:
+            $ref: '#/components/schemas/GeminiKey'
+        claude-api-key:
+          type: array
+          items:
+            $ref: '#/components/schemas/ClaudeKey'
+        codex-api-key:
+          type: array
+          items:
+            $ref: '#/components/schemas/CodexKey'
+        openai-compatibility:
+          type: array
+          items:
+            $ref: '#/components/schemas/OpenAICompatibility'

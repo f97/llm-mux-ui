@@ -65,13 +65,14 @@ export function ApiSetupScreen({ onComplete, onTest }: ApiSetupScreenProps) {
   const canConnect = testState === 'success' && isValid
 
   return (
-    <div className="fixed inset-0 z-50 bg-(--bg-body) flex items-center justify-center p-4">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, ease: 'easeOut' }}
-        className="w-full max-w-md"
-      >
+    <div className="fixed inset-0 z-50 bg-(--bg-body) overflow-y-auto">
+      <div className="min-h-full flex items-center justify-center p-4 py-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: 'easeOut' }}
+          className="w-full max-w-md"
+        >
         {/* Logo / Branding */}
         <div className="text-center mb-8">
           <motion.div
@@ -297,16 +298,17 @@ export function ApiSetupScreen({ onComplete, onTest }: ApiSetupScreenProps) {
           </Card>
         </motion.div>
 
-        {/* Footer Note */}
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5, duration: 0.3 }}
-          className="text-center text-xs text-(--text-tertiary) mt-6"
-        >
-          Your credentials are stored locally and never shared
-        </motion.p>
-      </motion.div>
+          {/* Footer Note */}
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5, duration: 0.3 }}
+            className="text-center text-xs text-(--text-tertiary) mt-6"
+          >
+            Your credentials are stored locally and never shared
+          </motion.p>
+        </motion.div>
+      </div>
     </div>
   )
 }

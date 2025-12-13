@@ -1,18 +1,16 @@
 @import "tailwindcss";
 @import "./styles/theme.css";
 
-/* Base styles */
-* {
-  outline: none;
-}
-
-*:focus {
-  outline: none;
-}
-
+/* Base styles - WCAG compliant focus indicators */
 *:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+/* Only suppress outline for mouse users */
+button:focus:not(:focus-visible),
+a:focus:not(:focus-visible) {
   outline: none;
-  box-shadow: none;
 }
 
 html {
@@ -27,14 +25,9 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Remove default link/button focus styles */
+/* Tap highlight for mobile */
 a, button {
-  outline: none;
   -webkit-tap-highlight-color: transparent;
-}
-
-a:focus, button:focus {
-  outline: none;
 }
 
 /* Page transitions handled by Framer Motion */

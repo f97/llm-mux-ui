@@ -19,4 +19,15 @@ export default defineConfig({
       ignored: ['**/routeTree.gen.ts'],
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom'],
+          'tanstack': ['@tanstack/react-query', '@tanstack/react-router'],
+          'framer': ['framer-motion'],
+        },
+      },
+    },
+  },
 })

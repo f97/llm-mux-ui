@@ -105,7 +105,7 @@ function ProvidersPage() {
     }
   }
 
-  const handleToggleDisabled = async (provider: AuthFile) => {
+  const handleToggleDisabled = async (_provider: AuthFile) => {
     // This would require an API endpoint to toggle the disabled status
     toast.warning('Toggle disabled status - API endpoint needed')
   }

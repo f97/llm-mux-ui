@@ -79,7 +79,13 @@ export function openOAuthPopup(url: string): Window | null {
  */
 export function monitorPopupClose(popup: Window, onClose: () => void): () => void {
   const interval = setInterval(() => {
-    if (popup.closed) {
+    try {
+      if (!popup || popup.closed) {
+        clearInterval(interval)
+        onClose()
+      }
+    } catch {
+      // Cross-origin access error - assume popup closed
       clearInterval(interval)
       onClose()
     }

@@ -1,6 +1,3 @@
-import { Card } from '../../ui/Card'
-import { Icon } from '../../ui/Icon'
-
 export function ChartSkeleton({ height = "h-64" }: { height?: string }) {
   return (
     <div className={`${height} w-full flex items-end justify-between gap-2 px-4 pb-4`}>

@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import type { HTMLMotionProps } from 'framer-motion'
 import { forwardRef } from 'react'
 import { cn } from '../../lib/cn'
-import { fadeInUp, staggerContainer, staggerItem, smooth } from '../../lib/animations'
+import { staggerContainer, staggerItem, smooth } from '../../lib/animations'
 
 // Animated container for staggered children
 export function AnimatedList({

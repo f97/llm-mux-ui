@@ -1,5 +1,3 @@
-import { cn } from '../../../lib/cn'
-
 export function ProviderCardSkeleton() {
   return (
     <div className="flex flex-col rounded-xl border border-(--border-color) bg-(--bg-card) p-5">

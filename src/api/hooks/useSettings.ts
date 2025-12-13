@@ -19,9 +19,10 @@ import {
 
 // Helper to handle API errors that indicate "disabled" features
 // Returns error message as part of data instead of throwing
-async function safeSettingFetch<T>(fetchFn: () => Promise<T>, defaultValue: T): Promise<T & { error?: string }> {
+async function safeSettingFetch<T extends object>(fetchFn: () => Promise<T>, defaultValue: T): Promise<T & { error?: string }> {
   try {
-    return await fetchFn()
+    const result = await fetchFn()
+    return result as T & { error?: string }
   } catch (err) {
     if (err instanceof Error && (err.message.includes('disabled') || err.message.includes('not enabled'))) {
       return { ...defaultValue, error: err.message }

@@ -14,7 +14,7 @@ export const useServerLogs = (params?: LogsQueryParams, autoRefresh = true) =>
   useQuery({
     queryKey: queryKeys.serverLogs(params?.after, params?.limit),
     queryFn: () => logsApi.get(params),
-    refetchInterval: autoRefresh ? 5000 : false, // Auto-refresh every 5 seconds
+    refetchInterval: autoRefresh ? 15000 : false, // Auto-refresh every 15 seconds
   })
 
 /**

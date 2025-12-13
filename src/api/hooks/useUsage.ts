@@ -13,5 +13,5 @@ export const useUsageStats = (autoRefresh = true) =>
   useQuery({
     queryKey: queryKeys.usageStats(),
     queryFn: () => usageApi.getStats(),
-    refetchInterval: autoRefresh ? 30000 : false, // Auto-refresh every 30 seconds
+    refetchInterval: autoRefresh ? 60000 : false, // Auto-refresh every 60 seconds
   })

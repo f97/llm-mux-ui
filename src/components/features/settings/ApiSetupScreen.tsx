@@ -140,6 +140,7 @@ export function ApiSetupScreen({ onComplete, onTest }: ApiSetupScreenProps) {
                   onChange={(e) => {
                     setBaseUrl(e.target.value)
                     setTestState('idle')
+                    setErrorMessage('')
                   }}
                   placeholder={DEFAULT_BASE_URL}
                   icon="link"
@@ -164,6 +165,7 @@ export function ApiSetupScreen({ onComplete, onTest }: ApiSetupScreenProps) {
                     onChange={(e) => {
                       setManagementKey(e.target.value)
                       setTestState('idle')
+                      setErrorMessage('')
                     }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && isValid) {
@@ -179,8 +181,9 @@ export function ApiSetupScreen({ onComplete, onTest }: ApiSetupScreenProps) {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-(--text-tertiary) hover:text-(--text-primary) transition-colors"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 text-(--text-tertiary) hover:text-(--text-primary) transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
                     disabled={testState === 'testing'}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
                     <Icon name={showPassword ? 'visibility_off' : 'visibility'} size="sm" />
                   </button>

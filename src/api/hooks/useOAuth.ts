@@ -146,6 +146,8 @@ export function useDeviceFlowStatus(
 // Complete OAuth Flow Hook
 // ============================================================================
 
+const OAUTH_TIMEOUT_MS = 5 * 60 * 1000 // 5 minutes
+
 export interface OAuthFlowState {
   isLoading: boolean
   error: string | null
@@ -161,11 +163,14 @@ export function useOAuthFlow(options: {
   const { onSuccess, onError } = options
   const queryClient = useQueryClient()
 
-  const [state, setState] = useState<string | null>(null)
+  const [flowState, setFlowState] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [currentProvider, setCurrentProvider] = useState<string | null>(null)
+  const [isPolling, setIsPolling] = useState(false)
+  
   const popupRef = useRef<Window | null>(null)
   const cleanupRef = useRef<(() => void) | null>(null)
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const completedRef = useRef(false)
 
   const startMutation = useOAuthStart()
   const cancelMutation = useOAuthCancel()
@@ -173,12 +178,19 @@ export function useOAuthFlow(options: {
   const cleanup = useCallback(() => {
     cleanupRef.current?.()
     cleanupRef.current = null
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current)
+      timeoutRef.current = null
+    }
     popupRef.current = null
-    setState(null)
-    setCurrentProvider(null)
+    setFlowState(null)
+    setIsPolling(false)
+    completedRef.current = false
   }, [])
 
   const handleSuccess = useCallback((provider: string) => {
+    if (completedRef.current) return
+    completedRef.current = true
     popupRef.current?.close()
     queryClient.invalidateQueries({ queryKey: queryKeys.authFilesList() })
     OAuthStateManager.clearAll()
@@ -187,47 +199,43 @@ export function useOAuthFlow(options: {
   }, [cleanup, onSuccess, queryClient])
 
   const handleError = useCallback((provider: string, err: string) => {
+    if (completedRef.current) return
+    completedRef.current = true
     popupRef.current?.close()
     setError(err)
     cleanup()
     onError?.(provider, err)
   }, [cleanup, onError])
 
-  // Setup listeners when state changes
-  useEffect(() => {
-    if (!state || !popupRef.current || !currentProvider) return
-
-    const messageCleanup = createOAuthMessageHandler({
-      expectedState: state,
-      onSuccess: handleSuccess,
-      onError: handleError,
-    })
-
-    const popupCleanup = monitorPopupClose(popupRef.current, () => {
-      if (state) {
-        cancelMutation.mutate(state)
-        cleanup()
-      }
-    })
-
-    cleanupRef.current = () => {
-      messageCleanup()
-      popupCleanup()
-    }
-
-    return cleanupRef.current
-  }, [state, currentProvider, handleSuccess, handleError, cancelMutation, cleanup])
-
-  // Polling fallback
-  useOAuthStatus(state, {
-    enabled: !!state && !!popupRef.current,
-    onSuccess: handleSuccess,
-    onError: handleError,
+  // Polling for status as fallback (and required per spec)
+  const statusQuery = useQuery({
+    queryKey: queryKeys.oauthStatus(flowState || ''),
+    queryFn: () => oauthApi.getStatus(flowState!),
+    enabled: isPolling && !!flowState && !completedRef.current,
+    refetchInterval: (query) => {
+      const status = query.state.data?.status
+      if (status && status !== 'pending') return false
+      return 2000 // Poll every 2 seconds per spec
+    },
+    gcTime: 0,
   })
+
+  // Handle polling results
+  useEffect(() => {
+    if (!statusQuery.data || completedRef.current) return
+    const { status, provider, error: pollError } = statusQuery.data
+
+    if (status === 'completed') {
+      handleSuccess(provider)
+    } else if (status === 'failed' || status === 'expired' || status === 'cancelled') {
+      handleError(provider, sanitizeOAuthError(pollError || `OAuth ${status}`))
+    }
+  }, [statusQuery.data, handleSuccess, handleError])
 
   const startFlow = useCallback(async (provider: OAuthProvider, projectId?: string) => {
     setError(null)
     cleanup()
+    completedRef.current = false
 
     try {
       const response = await startMutation.mutateAsync({
@@ -243,33 +251,74 @@ export function useOAuthFlow(options: {
         throw new Error('Invalid OAuth URL')
       }
 
-      OAuthStateManager.store(response.state, provider)
-      setCurrentProvider(provider)
+      const stateValue = response.state
+      OAuthStateManager.store(stateValue, provider)
 
+      // IMPORTANT: Setup message listener BEFORE opening popup
+      const messageCleanup = createOAuthMessageHandler({
+        expectedState: stateValue,
+        onSuccess: () => handleSuccess(provider),
+        onError: (_, err) => handleError(provider, err),
+      })
+
+      // Open popup
       const popup = openOAuthPopup(response.auth_url)
       if (!popup) {
+        messageCleanup()
         throw new Error('Popup blocked. Please allow popups.')
       }
 
       popupRef.current = popup
-      setState(response.state)
+
+      // Monitor popup close
+      const popupCleanup = monitorPopupClose(popup, () => {
+        if (!completedRef.current && stateValue) {
+          cancelMutation.mutate(stateValue)
+          cleanup()
+        }
+      })
+
+      // Setup 5-minute timeout per spec
+      timeoutRef.current = setTimeout(() => {
+        if (!completedRef.current) {
+          handleError(provider, 'OAuth timeout - please try again')
+          if (stateValue) cancelMutation.mutate(stateValue)
+        }
+      }, OAUTH_TIMEOUT_MS)
+
+      // Store cleanup functions
+      cleanupRef.current = () => {
+        messageCleanup()
+        popupCleanup()
+      }
+
+      // Start polling
+      setFlowState(stateValue)
+      setIsPolling(true)
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Failed to start OAuth'
       setError(msg)
       onError?.(provider, msg)
     }
-  }, [startMutation, cleanup, onError])
+  }, [startMutation, cleanup, onError, handleSuccess, handleError, cancelMutation])
 
   const cancelFlow = useCallback(() => {
-    if (state) cancelMutation.mutate(state)
+    if (flowState) cancelMutation.mutate(flowState)
     popupRef.current?.close()
     cleanup()
-  }, [state, cancelMutation, cleanup])
+  }, [flowState, cancelMutation, cleanup])
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      cleanup()
+    }
+  }, [cleanup])
 
   return {
-    isLoading: startMutation.isPending || !!state,
+    isLoading: startMutation.isPending || isPolling,
     error,
-    state,
+    state: flowState,
     startFlow,
     cancelFlow,
   }
